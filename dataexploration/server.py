@@ -22,6 +22,7 @@ from create_upload_recording import upload_recording
 from create_transcript import create_transcript
 from create_whisper_transcript import transcribe_with_whisper
 from transcript_improver import improve_transcript_with_gpt
+from manuscript import generate_manuscript # <-- Import the new function
 
 # --- App Setup ---
 @contextlib.asynccontextmanager
@@ -123,6 +124,19 @@ async def save_improved_transcript(
     db_transcript.improved_transcript = update_data.improved_transcript
     await db.commit()
     return {"message": "Transcript updated successfully"}
+
+# --- Manuscript Generation Endpoint ---
+class ManuscriptRequest(BaseModel):
+    topic: str
+
+@app.post("/manuscript")
+async def create_manuscript(request: ManuscriptRequest):
+    """Generates a medical manuscript on a given topic."""
+    manuscript_data = generate_manuscript(topic=request.topic)
+    if manuscript_data:
+        return manuscript_data.dict()
+    else:
+        raise HTTPException(status_code=500, detail="Failed to generate manuscript.")
 
 # The /improve endpoint remains mostly the same, but is now just for processing, not saving.
 class TranscriptsToImprove(BaseModel):

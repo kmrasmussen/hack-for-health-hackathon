@@ -32,6 +32,15 @@
 </head>
 <body>
     <h1>Audio Transcription Service</h1>
+
+    <!-- Manuscript Generation Section -->
+    <div id="manuscriptSection">
+        <h2>Generate Manuscript</h2>
+        <input type="text" id="manuscriptTopic" placeholder="Enter a topic (e.g., Sepsis)">
+        <button id="generateManuscriptButton">Generate</button>
+        <div id="manuscriptOutput" style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9; display: none;"></div>
+    </div>
+    <hr>
     
     <h3>Upload a New Audio File</h3>
     <input type="file" id="audioFileInput" accept="audio/*">

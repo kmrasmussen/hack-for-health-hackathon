@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Manuscript Elements ---
+    const manuscriptTopicInput = document.getElementById('manuscriptTopic');
+    const generateManuscriptButton = document.getElementById('generateManuscriptButton');
+    const manuscriptOutputElement = document.getElementById('manuscriptOutput');
+
+    // --- Transcription Elements ---
     const audioFileInput = document.getElementById('audioFileInput');
     const statusElement = document.getElementById('status');
     const jobListElement = document.getElementById('jobList');
@@ -12,6 +18,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentTranscriptId = null;
     let pollingInterval = null;
+
+    // --- Manuscript Event Listener ---
+    generateManuscriptButton.addEventListener('click', async () => {
+        const topic = manuscriptTopicInput.value;
+        if (!topic) {
+            alert('Please enter a topic.');
+            return;
+        }
+
+        manuscriptOutputElement.style.display = 'block';
+        manuscriptOutputElement.innerHTML = '<div class="loader"></div><p>Generating manuscript...</p>';
+
+        try {
+            const response = await fetch('/manuscript', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic: topic }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            manuscriptOutputElement.innerHTML = `
+                <h3>${data.title}</h3>
+                <p>${data.prose.replace(/\n/g, '<br>')}</p>
+                <h4>Key Takeaways:</h4>
+                <ul>
+                    ${data.key_takeaways.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            `;
+        } catch (error) {
+            manuscriptOutputElement.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        }
+    });
+
 
     // --- Initial Load ---
     async function loadJobs() {
