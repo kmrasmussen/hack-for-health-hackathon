@@ -4,6 +4,7 @@ import uuid
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel  # <-- Import BaseModel
 
 # Import your refactored functions
 from get_corti_bearer_token import get_access_token
@@ -11,6 +12,7 @@ from corti_create_new_interaction import create_corti_interaction
 from create_upload_recording import upload_recording
 from create_transcript import create_transcript
 from create_whisper_transcript import transcribe_with_whisper
+from transcript_improver import improve_transcript_with_gpt  # <-- Import the new function
 
 app = FastAPI()
 
@@ -21,10 +23,12 @@ os.makedirs(UPLOADS_DIR, exist_ok=True)
 # Mount the 'static' directory to serve index.html and index.js
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+
 @app.get("/")
 async def read_index():
     """Serves the main HTML file."""
     return FileResponse('static/index.html')
+
 
 @app.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
@@ -58,3 +62,25 @@ async def transcribe_audio(file: UploadFile = File(...)):
         "whisper_transcription": whisper_result or "Failed to get Whisper transcription.",
         "corti_transcription": corti_result or "Failed to get Corti transcription."
     }
+
+
+# --- Add the new endpoint and its request model ---
+class TranscriptsToImprove(BaseModel):
+    whisper_transcription: str
+    corti_transcription: str
+
+
+@app.post("/improve")
+async def improve_transcripts(transcripts: TranscriptsToImprove):
+    """
+    Receives two transcripts and uses a chat model to generate an improved version.
+    """
+    improved_result = improve_transcript_with_gpt(
+        whisper_text=transcripts.whisper_transcription,
+        corti_text=transcripts.corti_transcription
+    )
+
+    if improved_result:
+        return improved_result.dict()
+    else:
+        return {"error": "Failed to generate improved transcript."}

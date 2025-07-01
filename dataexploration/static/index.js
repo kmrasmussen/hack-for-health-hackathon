@@ -4,9 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const audioFileInput = document.getElementById('audioFileInput');
     const statusElement = document.getElementById('status');
     const resultsElement = document.getElementById('results');
+    const improveSection = document.getElementById('improveSection');
+    const improveButton = document.getElementById('improveButton');
+    const improvedResultsElement = document.getElementById('improvedResults');
 
     let mediaRecorder;
     let audioChunks = [];
+    let currentTranscripts = {}; // To store transcripts for the improve call
 
     // --- Recording Logic ---
     recordButton.addEventListener('click', async () => {
@@ -56,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('file', audioData, fileName);
 
         resultsElement.innerHTML = '<div class="loader"></div><p>Processing... this may take a moment.</p>';
+        improveSection.style.display = 'none'; // Hide improve section during new transcription
+        improvedResultsElement.innerHTML = '';
 
         fetch('/transcribe', {
             method: 'POST',
@@ -76,6 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>${data.corti_transcription}</p>
             `;
             statusElement.textContent = 'Transcription complete.';
+            
+            // Store results and show the improve button
+            currentTranscripts = data;
+            improveSection.style.display = 'block';
         })
         .catch(error => {
             console.error('Error:', error);
@@ -83,4 +93,38 @@ document.addEventListener('DOMContentLoaded', () => {
             statusElement.textContent = 'An error occurred.';
         });
     }
+
+    // --- Improve Transcript Logic ---
+    improveButton.addEventListener('click', () => {
+        improvedResultsElement.innerHTML = '<div class="loader"></div><p>Asking the AI to improve the transcript...</p>';
+        
+        fetch('/improve', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(currentTranscripts),
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('data from improve')
+          console.log(data)
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            let html = '<ul>';
+            data.sentences.forEach(sentence => {
+                const style = sentence.is_uncertain ? 'style="color: orange;"' : '';
+                html += `<li ${style}>${sentence.text}</li>`;
+            });
+            html += '</ul>';
+            
+            improvedResultsElement.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error improving transcript:', error);
+            improvedResultsElement.innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
+        });
+    });
 });
