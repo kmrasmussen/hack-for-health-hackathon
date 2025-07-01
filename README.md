@@ -1,3 +1,4 @@
+
 # Hack for Health Hackathon
 
 Speech analysis project using the Coral dataset.
@@ -44,3 +45,10 @@ uv run python script.py
 ## Plan
 - Coral dataset exploration
 - Speech analysis implementation
+
+## How to run frontend1
+```
+cd dataexploration
+uvicorn server:app --reload
+```
+så burde den køre på localhost:8000
