@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transcription</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #recordButton, #stopButton, #uploadButton { padding: 10px; margin: 5px; }
+        #results { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 2s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h1>Audio Transcription Service</h1>
+    
+    <h3>Option 1: Upload an Audio File</h3>
+    <input type="file" id="audioFileInput" accept="audio/*">
+    
+    <hr>
+
+    <h3>Option 2: Record Audio in Browser</h3>
+    <button id="recordButton">Record</button>
+    <button id="stopButton" disabled>Stop & Transcribe</button>
+    <p id="status"></p>
+
+    <h2>Results</h2>
+    <div id="results">
+        <p>Your transcriptions will appear here...</p>
+    </div>
+
+    <script src="/static/index.js"></script>
+</body>
+</html>
