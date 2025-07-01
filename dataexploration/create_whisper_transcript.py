@@ -14,9 +14,9 @@ except Exception as e:
     print("Please make sure your OPENAI_API_KEY is set correctly in the .env file.")
     exit()
 
-def transcribe_with_whisper(file_path: str):
+def transcribe_with_whisper(file_path: str) -> str | None:
     """
-    Transcribes the given audio file using OpenAI's Whisper API.
+    Transcribes the given audio file using OpenAI's Whisper API and returns the text.
     """
     print(f"\nTranscribing {file_path} with Whisper...")
 
@@ -27,15 +27,17 @@ def transcribe_with_whisper(file_path: str):
     try:
         with open(file_path, "rb") as audio_file:
             transcription = client.audio.transcriptions.create(
-              model="whisper-1", # You can also use "gpt-4o-transcribe"
+              model="whisper-1",
               file=audio_file
             )
         
         print("Whisper transcription successful!")
-        print(f"\n>>> Final Transcription: {transcription.text}")
+        print(f"\n>>> Whisper Transcription: {transcription.text}")
+        return transcription.text
 
     except Exception as e:
         print(f"An error occurred with the Whisper API call: {e}")
+        return None
 
 
 if __name__ == "__main__":

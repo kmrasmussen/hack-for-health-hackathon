@@ -7,9 +7,9 @@ from get_corti_bearer_token import get_access_token
 from corti_create_new_interaction import create_corti_interaction
 from create_upload_recording import upload_recording
 
-def create_transcript(access_token: str, interaction_id: str, recording_id: str):
+def create_transcript(access_token: str, interaction_id: str, recording_id: str) -> str | None:
     """
-    Requests a transcript for a given interaction and recording.
+    Requests a transcript and returns the transcribed text.
     """
     print("\nRequesting transcript...")
     try:
@@ -31,17 +31,19 @@ def create_transcript(access_token: str, interaction_id: str, recording_id: str)
 
         transcript_data = response.json()
         print("Transcript created successfully!")
-        print(json.dumps(transcript_data, indent=2))
-
+        
         if transcript_data.get("transcripts"):
             full_text = " ".join([t['text'] for t in transcript_data['transcripts']])
-            print(f"\n>>> Final Transcription: {full_text}")
+            print(f"\n>>> Corti Transcription: {full_text}")
+            return full_text
+        return "[Transcription in progress or failed]"
 
     except requests.exceptions.RequestException as e:
         print(f"\nAn API error occurred while creating transcript: {e}")
         if e.response is not None:
             print(f"Status Code: {e.response.status_code}")
             print(f"Response Body: {e.response.text}")
+        return None
 
 if __name__ == "__main__":
     # Define the audio file to be transcribed
