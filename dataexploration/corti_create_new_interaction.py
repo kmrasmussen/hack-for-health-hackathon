@@ -1,7 +1,12 @@
-import requests
+import os
 import json
 import uuid
-from get_corti_bearer_token import get_access_token
+import requests
+from dotenv import load_dotenv
+# Use a relative import because it's in the same package
+from .get_corti_bearer_token import get_access_token
+
+load_dotenv()
 
 def create_corti_interaction(access_token: str) -> str | None:
     """

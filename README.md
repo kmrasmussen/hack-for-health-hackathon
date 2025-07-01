@@ -55,3 +55,16 @@ så burde den køre på localhost:8000
 
 eller
 uv run uvicorn server:app --reload
+
+### 1. Build the Docker image
+From the project's root directory, run:
+```bash
+docker build -t hack-for-health .
+```
+
+### 2. Run the Docker container
+```bash
+docker run -p 8000:8000 -it --rm --name health-hack-app hack-for-health
+```
+
+The application will now be running and accessible at [http://localhost:8000](http://localhost:8000).
