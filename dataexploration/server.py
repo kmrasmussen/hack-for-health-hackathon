@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, BackgroundTasks
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response # <-- Import Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +24,7 @@ from .create_transcript import create_transcript
 from .create_whisper_transcript import transcribe_with_whisper
 from .transcript_improver import improve_transcript_with_gpt
 from .manuscript import generate_manuscript
+from .tts import generate_speech # <-- Import the new TTS function
 
 # --- App Setup ---
 @contextlib.asynccontextmanager
@@ -169,6 +170,22 @@ async def create_manuscript(request: ManuscriptRequest):
         return manuscript_data.dict()
     else:
         raise HTTPException(status_code=500, detail="Failed to generate manuscript.")
+
+# --- TTS Endpoint ---
+class TTSRequest(BaseModel):
+    text: str
+
+@app.post("/tts")
+async def text_to_speech(request: TTSRequest):
+    """
+    Converts text to speech and returns the audio file.
+    """
+    audio_bytes = generate_speech(text_to_speak=request.text)
+    if audio_bytes:
+        # Return the raw audio bytes with the correct media type
+        return Response(content=audio_bytes, media_type="audio/mpeg")
+    else:
+        raise HTTPException(status_code=500, detail="Failed to generate speech.")
 
 # The /improve endpoint remains mostly the same, but is now just for processing, not saving.
 class TranscriptsToImprove(BaseModel):

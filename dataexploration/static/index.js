@@ -48,9 +48,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
+
+            // Store the presentation text for the TTS function
+            manuscriptOutputElement.dataset.patientPresentation = data.patient_presentation;
+
             manuscriptOutputElement.innerHTML = `
                 <h3>${data.title}</h3>
-                <p>${data.prose.replace(/\n/g, '<br>')}</p>
+                
+                <h4>
+                    Patient Presentation:
+                    <button id="playPresentationButton" title="Read presentation aloud">▶️ Start Conversation</button>
+                </h4>
+                <p><em>"${data.patient_presentation}"</em></p>
+                
+                <h4>Ground Truth Diagnosis:</h4>
+                <p><strong>${data.ground_truth_diagnosis}</strong></p>
+
+                <h4>Doctor's Key Sentence:</h4>
+                <p>"${data.single_doctor_sentence}"</p>
+                
+                <hr>
+                <h4>Example Doctor Report:</h4>
+                <p>${data.example_doctor_report.replace(/\n/g, '<br>')}</p>
+                
                 <h4>Key Takeaways:</h4>
                 <ul>
                     ${data.key_takeaways.map(item => `<li>${item}</li>`).join('')}
@@ -63,6 +83,52 @@ document.addEventListener('DOMContentLoaded', () => {
             manuscriptRecordStatus.textContent = '';
         } catch (error) {
             manuscriptOutputElement.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        }
+    });
+
+    // --- Add Event Listener for the new TTS button ---
+    // We add it to the container, as the button is created dynamically
+    manuscriptOutputElement.addEventListener('click', async (event) => {
+        if (event.target.id === 'playPresentationButton') {
+            const button = event.target;
+            const textToSpeak = manuscriptOutputElement.dataset.patientPresentation;
+
+            if (!textToSpeak) return;
+
+            button.textContent = '...'; // Indicate loading
+            button.disabled = true;
+
+            try {
+                const response = await fetch('/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: textToSpeak }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate audio.');
+                }
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+
+                // Reset button after audio finishes
+                audio.onended = () => {
+                    button.textContent = '▶️ Start Conversation';
+                    button.disabled = false;
+                };
+
+            } catch (error) {
+                console.error('Error playing audio:', error);
+                button.textContent = 'Error';
+                // Reset after a delay
+                setTimeout(() => {
+                    button.textContent = '▶️ Start Conversation';
+                    button.disabled = false;
+                }, 2000);
+            }
         }
     });
 
@@ -90,15 +156,24 @@ document.addEventListener('DOMContentLoaded', () => {
             manuscriptMediaRecorder.onstop = () => {
                 // Use the mimeType from the recorder for consistency
                 const audioBlob = new Blob(manuscriptAudioChunks, { type: manuscriptMediaRecorder.mimeType });
+                
+                // --- Create a download link instead of auto-uploading ---
+                const downloadUrl = URL.createObjectURL(audioBlob);
                 const topic = manuscriptTopicInput.value || 'manuscript';
                 // Adjust file extension based on what was actually recorded
                 const fileExtension = manuscriptMediaRecorder.mimeType.includes('wav') ? 'wav' : 'webm';
                 const fileName = `${topic.replace(/\s+/g, '_')}_reading.${fileExtension}`;
-                const audioFile = new File([audioBlob], fileName, { type: manuscriptMediaRecorder.mimeType });
-                
-                statusElement.textContent = `Uploading recording of "${topic}"...`;
-                uploadAndStartTranscription(audioFile);
 
+                const downloadLink = document.createElement('a');
+                downloadLink.href = downloadUrl;
+                downloadLink.download = fileName;
+                downloadLink.textContent = `Download "${fileName}"`;
+                downloadLink.style.display = 'block';
+                downloadLink.style.marginTop = '10px';
+
+                manuscriptRecordStatus.innerHTML = 'Recording complete. Please download the file and upload it using the "Upload a New Audio File" section below.';
+                manuscriptRecordStatus.appendChild(downloadLink);
+                
                 // Stop the microphone stream to turn off the indicator
                 stream.getTracks().forEach(track => track.stop());
             };

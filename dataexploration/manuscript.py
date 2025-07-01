@@ -16,10 +16,13 @@ except Exception as e:
 
 # --- 2. Define the desired JSON output structure using Pydantic ---
 class Manuscript(BaseModel):
-    """A structured medical manuscript on a given topic."""
-    title: str = Field(description="A concise and fitting title for the manuscript.")
-    prose: str = Field(description="The main body of the manuscript, written in realistic, professional prose as a doctor might explain the topic. It should be well-structured and informative.")
-    key_takeaways: List[str] = Field(description="A list of 3-5 bullet points summarizing the most critical information from the prose.")
+    """A structured medical case report on a given topic."""
+    title: str = Field(description="A concise and fitting title for the case report.")
+    patient_presentation: str = Field(description="A brief summary of the symptoms and complaints the patient presents with, in their own words or as observed initially.")
+    ground_truth_diagnosis: str = Field(description="The definitive underlying medical diagnosis for the fictional patient's case.")
+    single_doctor_sentence: str = Field(description="A single, standalone sentence a doctor might say that must include the topic.")
+    example_doctor_report: str = Field(description="The main body of the report, written in realistic, professional prose as a doctor might write after a consultation. It should be well-structured and informative.")
+    key_takeaways: List[str] = Field(description="A list of 3-5 bullet points summarizing the most critical information from the report.")
 
 # --- 3. Create the function to call the chat model ---
 def generate_manuscript(topic: str) -> Manuscript | None:
@@ -33,16 +36,17 @@ def generate_manuscript(topic: str) -> Manuscript | None:
     print(f"\nAsking OpenAI to generate a manuscript on: {topic}...")
 
     system_prompt = f"""
-    You are a highly knowledgeable medical professional and a skilled writer. Your task is to generate a clear, concise, and informative manuscript on the given topic: "{topic}".
+    You are a highly knowledgeable medical professional. Your task is to generate a fictional but realistic medical case file based on the topic: "{topic}".
 
-    The manuscript should be written in realistic prose, as if a doctor were explaining the concept to a colleague or a medical student. It must be accurate and professionally toned.
+    Create a complete, self-contained case. This involves inventing a patient, their symptoms, and the context of their visit.
 
-    The text should be written as if you are a doctor that has just had a consultation and is using a lot of prose. The goal is that we cover a lot of vocabulary in its right context, a lot of medical terms.
-    Make it more like a description of a concrete case, it is fine to imagine what the patients etc presented of symptoms etc, more than an encyclopedic article.
-
-    Make the manuscript exactly four sentences and start the first sentence with "The patient ...".
-    
-    Please structure your response according to the provided JSON schema, including a title, the main prose, and a list of key takeaways.
+    Please structure your response according to the provided JSON schema with the following fields:
+    1.  `title`: A title for the case file.
+    2.  `patient_presentation`: Describe what the patient says they are experiencing. Use layman's terms, as a real patient would.
+    3.  `ground_truth_diagnosis`: State the definitive, correct medical diagnosis for the case you've invented.
+    4.  `single_doctor_sentence`: A single, standalone sentence a doctor might say during a consultation that explicitly includes the topic "{topic}".
+    5.  `example_doctor_report`: Write a sample report a doctor would create after the consultation. This report should be exactly four sentences, start with "The patient ...", and use professional medical terminology.
+    6.  `key_takeaways`: A list of 3-5 bullet points summarizing the case.
     """
 
     try:
