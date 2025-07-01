@@ -139,7 +139,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const medicalIcon = sentence.has_medical_terminology ? '<span class="medical-icon">⚕️</span>' : '';
             if (sentence.is_uncertain) liClasses.push('uncertain-sentence');
-            html += `<li class="${liClasses.join(' ')}" contenteditable="true">${medicalIcon}${sentenceText}</li>`;
+
+            // --- Create Labels ---
+            const medLabel = sentence.best_model_for_medical_terminology;
+            const speechLabel = sentence.best_everyday_speech;
+            
+            const labelsHtml = `
+                <div class="labels-container">
+                    <span class="label ${medLabel.toLowerCase()}" data-type="med" data-value="${medLabel}">Med: ${medLabel}</span>
+                    <span class="label ${speechLabel.toLowerCase()}" data-type="speech" data-value="${speechLabel}">Speech: ${speechLabel}</span>
+                </div>
+            `;
+
+            html += `<li class="${liClasses.join(' ')}">
+                        <div class="sentence-container">
+                            <div class="sentence-text" contenteditable="true">${medicalIcon}${sentenceText}</div>
+                            ${labelsHtml}
+                        </div>
+                     </li>`;
         });
         html += '</ul>';
         improvedResultsElement.innerHTML = html;
@@ -150,13 +167,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const editedItems = improvedResultsElement.querySelectorAll('li');
         const sentences = [];
         editedItems.forEach(item => {
-            const text = item.querySelector('.medical-icon') ? item.innerText.replace('⚕️', '').trim() : item.innerText.trim();
-            // This is a simplified save; we lose the metadata. A more complex implementation would preserve it.
+            const sentenceTextElement = item.querySelector('.sentence-text');
+            const text = sentenceTextElement.innerText.trim();
+            
+            // --- Read Labels Back ---
+            const medLabel = item.querySelector('[data-type="med"]').dataset.value;
+            const speechLabel = item.querySelector('[data-type="speech"]').dataset.value;
+
             sentences.push({
                 text: text,
-                is_uncertain: item.classList.contains('uncertain-sentence'),
-                has_medical_terminology: !!item.querySelector('.medical-icon'),
-                specific_uncertain_word: Array.from(item.querySelectorAll('.uncertain-word')).map(el => el.textContent)
+                is_uncertain: sentenceTextElement.classList.contains('uncertain-sentence'),
+                has_medical_terminology: !!sentenceTextElement.querySelector('.medical-icon'),
+                specific_uncertain_word: Array.from(sentenceTextElement.querySelectorAll('.uncertain-word')).map(el => el.textContent),
+                best_model_for_medical_terminology: medLabel,
+                best_everyday_speech: speechLabel
             });
         });
 
