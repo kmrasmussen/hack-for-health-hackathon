@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const improveSection = document.getElementById('improveSection');
     const improveButton = document.getElementById('improveButton');
     const improvedResultsElement = document.getElementById('improvedResults');
+    const saveButtonContainer = document.getElementById('saveButtonContainer');
+    const saveButton = document.getElementById('saveButton');
 
     let mediaRecorder;
     let audioChunks = [];
@@ -97,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Improve Transcript Logic ---
     improveButton.addEventListener('click', () => {
         improvedResultsElement.innerHTML = '<div class="loader"></div><p>Asking the AI to improve the transcript...</p>';
+        saveButtonContainer.style.display = 'none'; // Hide save button during processing
         
         fetch('/improve', {
             method: 'POST',
@@ -107,24 +110,72 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => response.json())
         .then(data => {
-          console.log('data from improve')
-          console.log(data)
             if (data.error) {
                 throw new Error(data.error);
             }
             
             let html = '<ul>';
             data.sentences.forEach(sentence => {
-                const style = sentence.is_uncertain ? 'style="color: orange;"' : '';
-                html += `<li ${style}>${sentence.text}</li>`;
+                let sentenceText = sentence.text;
+                let liClasses = [];
+
+                // Highlight specific uncertain words by wrapping them in a span with a class
+                if (sentence.specific_uncertain_word && sentence.specific_uncertain_word.length > 0) {
+                    sentence.specific_uncertain_word.forEach(word => {
+                        const regex = new RegExp(`\\b(${word})\\b`, 'gi');
+                        sentenceText = sentenceText.replace(regex, `<span class="uncertain-word">$1</span>`);
+                    });
+                }
+
+                // Add a medical icon span if applicable
+                const medicalIcon = sentence.has_medical_terminology ? '<span class="medical-icon">⚕️</span>' : '';
+                
+                // Add a class to the whole <li> if it's generally uncertain
+                if (sentence.is_uncertain) {
+                    liClasses.push('uncertain-sentence');
+                }
+
+                // Add contenteditable="true" to make the list item editable
+                html += `<li class="${liClasses.join(' ')}" contenteditable="true">${medicalIcon}${sentenceText}</li>`;
             });
             html += '</ul>';
             
             improvedResultsElement.innerHTML = html;
+            saveButtonContainer.style.display = 'block'; // Show the save button
         })
         .catch(error => {
             console.error('Error improving transcript:', error);
             improvedResultsElement.innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
         });
+    });
+
+    // --- Save Edits Logic ---
+    saveButton.addEventListener('click', () => {
+        const editedItems = improvedResultsElement.querySelectorAll('li');
+        const finalTranscripts = [];
+
+        console.log("--- User's Final Edits (Saved at " + new Date().toLocaleTimeString() + ") ---");
+        editedItems.forEach(item => {
+            // We no longer make the item non-editable.
+            
+            // Log the final text content, stripping out the icon if present
+            const text = item.querySelector('.medical-icon') 
+                ? item.innerText.replace('⚕️', '').trim() 
+                : item.innerText.trim();
+            
+            finalTranscripts.push(text);
+            console.log(text);
+        });
+
+        // Provide temporary feedback instead of disabling the button
+        const originalButtonText = saveButton.textContent;
+        saveButton.textContent = 'Saved!';
+        statusElement.textContent = 'Current edits saved to console.';
+
+        // Revert the button back to its original state after 2 seconds
+        setTimeout(() => {
+            saveButton.textContent = originalButtonText;
+            statusElement.textContent = 'Ready to save again.';
+        }, 2000);
     });
 });

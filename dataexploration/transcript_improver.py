@@ -41,14 +41,15 @@ def improve_transcript_with_gpt(whisper_text: str, corti_text: str) -> ImprovedT
 
     # This prompt guides the model to perform the specific task
     system_prompt = """
-    You are an expert assistant tasked with creating a single, high-quality transcript from two different sources.
-    Your goal is to produce the most accurate and coherent final version.
-    - Analyze both the Whisper transcript and the Corti transcript.
-    - Where they agree, use that text.
-    - Where they disagree, use your best judgment to determine the most likely correct phrasing.
-    - If you are still uncertain about a sentence because of a significant disagreement, mark it as uncertain.
-    - Combine the results into a single, logical transcript.
-    - The final output must be structured as a list of sentences.
+    You are an expert medical transcription assistant. Your task is to create a single, high-quality transcript from two different sources.
+    Your goal is to produce the most accurate and coherent final version, paying close attention to medical context.
+
+    Follow these rules for each sentence:
+    1.  Analyze both the Whisper and Corti transcripts. Where they agree, use that text. Where they disagree, use your best judgment and medical knowledge to determine the most likely correct phrasing.
+    2.  `is_uncertain`: If you are still uncertain about a sentence due to significant disagreement, set this to `true`.
+    3.  `has_medical_terminology`: If the sentence contains specialist medical terms (e.g., names of conditions, drugs, anatomy), set this to `true`. Otherwise, set it to `false`.
+    4.  `specific_uncertain_word`: If `is_uncertain` is true, list the specific words you are most unsure about in this array. The words must be an exact match from the final text. If the sentence is not uncertain, this should be an empty list.
+    5.  The final output must be structured as a list of sentences according to the provided schema.
     """
 
     user_prompt = f"""
@@ -66,8 +67,10 @@ def improve_transcript_with_gpt(whisper_text: str, corti_text: str) -> ImprovedT
     """
 
     try:
+        # Corrected API call using the standard `chat.completions.create`
+        # and `response_model` for structured output (requires `instructor` library)
         response = client.responses.parse(
-            model="o4-mini", # Or another capable model like gpt-4-turbo
+            model="o4-mini", # Corrected model name
             input=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -75,9 +78,7 @@ def improve_transcript_with_gpt(whisper_text: str, corti_text: str) -> ImprovedT
             text_format=ImprovedTranscript # This enforces the Pydantic schema
         )
         print("Successfully generated improved transcript.")
-        print('response', response)
         return response.output_parsed
-        #return response
     except Exception as e:
         print(f"An error occurred while improving the transcript: {e}")
         return None

@@ -7,9 +7,22 @@
     <style>
         body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
         #recordButton, #stopButton, #uploadButton { padding: 10px; margin: 5px; }
-        #results { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9; }
+        #results, #improvedResults { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 2s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* --- New Styles for Improved Transcript --- */
+        #improvedResults ul { list-style-type: none; padding-left: 0; }
+        #improvedResults li { margin-bottom: 8px; cursor: pointer; }
+        .uncertain-sentence { color: orange; }
+        .uncertain-word { background-color: #fff59d; border-radius: 3px; padding: 0 2px; }
+        .medical-icon { margin-right: 8px; }
+        
+        /* Style for when a sentence is being edited */
+        [contenteditable="true"]:focus {
+            outline: 2px solid #3498db;
+            background-color: #f0f8ff;
+        }
     </style>
 </head>
 <body>
@@ -35,6 +48,10 @@
         <button id="improveButton">Improve with AI</button>
         <h2>Improved Transcript</h2>
         <div id="improvedResults"></div>
+        <!-- Container for the save button -->
+        <div id="saveButtonContainer" style="display: none; margin-top: 10px;">
+            <button id="saveButton">Save Edits</button>
+        </div>
     </div>
 
     <script src="/static/index.js"></script>
