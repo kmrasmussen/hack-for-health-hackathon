@@ -23,6 +23,10 @@ class Sentence(BaseModel):
     is_uncertain: bool = Field(description="Set to true if the model is uncertain about the accuracy of this sentence, for example if the two source transcripts disagree significantly.")
     has_medical_terminology: bool = Field(description="Set to true if the sentence contains specialist medical terminology, and false if just usual conversation that everyone understands.")
     specific_uncertain_word: List[str] = Field(description="If uncertain in general, list specific words you are especially uncertain about and make them be verbatim exact matches to the words you used in the text field.")
+    best_model_for_medical_terminology: str = Field(description="Write 'corti' if corti is better in this current sentence or write 'whisper' if whisper is better at the medical terminology. Write 'NA' if there is no medical terminology. Write 'tie' if they both seem equally good or say the same.",
+                                                    enum=["corti", "whisper", "NA", "tie"])
+    best_everyday_speech: str = Field(description="Write 'corti' if corti is better in this current sentence or write 'whisper' if whisper is better at the non-specialist everyday speech part of the sentence. Write 'NA' if there . Write 'tie' if they both seem equally good or say the same.",
+                                      enum=["corti", "whisper", "NA", "tie"])
 
 class ImprovedTranscript(BaseModel):
     """The final, improved transcript composed of a list of sentences."""
