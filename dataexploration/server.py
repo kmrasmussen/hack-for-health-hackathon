@@ -15,15 +15,15 @@ from sqlalchemy import select
 import contextlib
 from pydub import AudioSegment # <-- Import pydub
 
-# Import DB and transcription functions
-from database import get_db, init_db, Transcript, AsyncSessionLocal
-from get_corti_bearer_token import get_access_token
-from corti_create_new_interaction import create_corti_interaction
-from create_upload_recording import upload_recording
-from create_transcript import create_transcript
-from create_whisper_transcript import transcribe_with_whisper
-from transcript_improver import improve_transcript_with_gpt
-from manuscript import generate_manuscript # <-- Import the new function
+# Import DB and transcription functions using relative imports
+from .database import get_db, init_db, Transcript, AsyncSessionLocal
+from .get_corti_bearer_token import get_access_token
+from .corti_create_new_interaction import create_corti_interaction
+from .create_upload_recording import upload_recording
+from .create_transcript import create_transcript
+from .create_whisper_transcript import transcribe_with_whisper
+from .transcript_improver import improve_transcript_with_gpt
+from .manuscript import generate_manuscript
 
 # --- App Setup ---
 @contextlib.asynccontextmanager
@@ -34,9 +34,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-UPLOADS_DIR = "temp_uploads"
+# --- Define absolute paths for directories ---
+# Get the directory where this server.py file is located
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+UPLOADS_DIR = os.path.join(current_dir, "temp_uploads")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Mount the static directory using an absolute path
+STATIC_DIR = os.path.join(current_dir, "static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 
 # --- Background Transcription Task ---
 async def process_transcription_task(transcript_id: uuid.UUID, temp_file_path: str, db: AsyncSession):
@@ -92,7 +100,8 @@ async def process_transcription_task(transcript_id: uuid.UUID, temp_file_path: s
 # --- API Endpoints ---
 @app.get("/")
 async def read_index():
-    return FileResponse('static/index.html')
+    # Use the absolute path to the static directory
+    return FileResponse(os.path.join(STATIC_DIR, 'index.html'))
 
 @app.post("/transcripts")
 async def create_transcription_job(

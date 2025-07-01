@@ -1,8 +1,9 @@
 import requests
 import json
 import os
-from get_corti_bearer_token import get_access_token
-from corti_create_new_interaction import create_corti_interaction # <-- Import the new function
+# Use relative imports for modules in the same package
+from .get_corti_bearer_token import get_access_token
+from .corti_create_new_interaction import create_corti_interaction
 
 # --- 1. Get a fresh access token ---
 try:

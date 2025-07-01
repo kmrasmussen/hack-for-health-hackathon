@@ -2,10 +2,10 @@ import requests
 import json
 import os
 
-# Import the reusable functions from your other scripts
-from get_corti_bearer_token import get_access_token
-from corti_create_new_interaction import create_corti_interaction
-from create_upload_recording import upload_recording
+# Use relative imports for modules in the same package
+from .get_corti_bearer_token import get_access_token
+from .corti_create_new_interaction import create_corti_interaction
+from .create_upload_recording import upload_recording
 
 def create_transcript(access_token: str, interaction_id: str, recording_id: str) -> str | None:
     """
