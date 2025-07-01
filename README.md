@@ -13,29 +13,32 @@ git clone <your-repo-url>
 cd hack-for-health-hackathon
 ```
 
-### 2. Create a virtual environment
+### Install uv
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### 3. Install dependencies
+### Install project
 ```bash
-pip install -r requirements.txt
+uv install
 ```
 
-### 4. Run the data exploration
+### When you want to add new packages
 ```bash
-python dataexploration/load_coral.py
+uv add ***name of package***
+```
+
+### Run a script
+```bash
+uv run python script.py
 ```
 
 ## Project Structure
 ```
 ├── README.md
-├── requirements.txt
+├── pyproject.toml
+├── pyproject.toml
 ├── .gitignore
-└── dataexploration/
-    └── load_coral.py
 ```
 
 ## Plan
