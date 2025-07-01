@@ -86,9 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Add Event Listener for the new TTS button ---
-    // We add it to the container, as the button is created dynamically
+    // --- Add Event Listener for dynamic buttons inside the manuscript output ---
     manuscriptOutputElement.addEventListener('click', async (event) => {
+        // --- Handler for the "Start Conversation" button ---
         if (event.target.id === 'playPresentationButton') {
             const button = event.target;
             const textToSpeak = manuscriptOutputElement.dataset.patientPresentation;
@@ -105,29 +105,61 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ text: textToSpeak }),
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to generate audio.');
-                }
+                if (!response.ok) throw new Error('Failed to generate audio.');
 
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 audio.play();
 
-                // Reset button after audio finishes
+                // When the first audio finishes, show the "Patient Leaves" button
                 audio.onended = () => {
-                    button.textContent = '▶️ Start Conversation';
-                    button.disabled = false;
+                    button.remove(); // Remove the "Start Conversation" button
+                    const patientLeavesButton = document.createElement('button');
+                    patientLeavesButton.id = 'patientLeavesButton';
+                    patientLeavesButton.textContent = 'Patient Leaves';
+                    // Insert it where the original button was, inside the H4
+                    manuscriptOutputElement.querySelector('h4').appendChild(patientLeavesButton);
                 };
 
             } catch (error) {
                 console.error('Error playing audio:', error);
                 button.textContent = 'Error';
-                // Reset after a delay
-                setTimeout(() => {
-                    button.textContent = '▶️ Start Conversation';
-                    button.disabled = false;
-                }, 2000);
+            }
+        }
+
+        // --- Handler for the new "Patient Leaves" button ---
+        else if (event.target.id === 'patientLeavesButton') {
+            const button = event.target;
+            button.textContent = '...';
+            button.disabled = true;
+
+            const promptText = "Okay, the patient left. What are your thoughts? Feel free to use as much medical terminology as possible.";
+
+            try {
+                const response = await fetch('/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: promptText }),
+                });
+
+                if (!response.ok) throw new Error('Failed to generate prompt audio.');
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+
+                // When the prompt audio finishes, remove the button and start recording
+                audio.onended = () => {
+                    button.remove();
+                    // Programmatically click the main record button to start the process
+                    recordManuscriptButton.click();
+                };
+
+            } catch (error) {
+                console.error('Error playing prompt audio:', error);
+                button.textContent = 'Error';
             }
         }
     });
