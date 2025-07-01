@@ -75,7 +75,8 @@ try:
     # This call initiates the transcription process.
     transcript_payload = {
         "recordingId": recording_id,
-        "primaryLanguage": "da-DK", # Danish
+        "tenantName": "base",
+        "primaryLanguage": "en", # Danish
         "modelName": "enhanced", # or "base", "premier"
         "diarize": False # The sample has only one speaker
     }

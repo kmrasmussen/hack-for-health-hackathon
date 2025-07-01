@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const manuscriptTopicInput = document.getElementById('manuscriptTopic');
     const generateManuscriptButton = document.getElementById('generateManuscriptButton');
     const manuscriptOutputElement = document.getElementById('manuscriptOutput');
+    const manuscriptRecordControls = document.getElementById('manuscriptRecordControls');
+    const recordManuscriptButton = document.getElementById('recordManuscriptButton');
+    const stopManuscriptButton = document.getElementById('stopManuscriptButton');
+    const manuscriptRecordStatus = document.getElementById('manuscriptRecordStatus');
 
     // --- Transcription Elements ---
     const audioFileInput = document.getElementById('audioFileInput');
@@ -18,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentTranscriptId = null;
     let pollingInterval = null;
+    let manuscriptMediaRecorder;
+    let manuscriptAudioChunks = [];
 
     // --- Manuscript Event Listener ---
     generateManuscriptButton.addEventListener('click', async () => {
@@ -50,9 +56,69 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${data.key_takeaways.map(item => `<li>${item}</li>`).join('')}
                 </ul>
             `;
+            // Show the recording controls
+            manuscriptRecordControls.style.display = 'block';
+            recordManuscriptButton.disabled = false;
+            stopManuscriptButton.disabled = true;
+            manuscriptRecordStatus.textContent = '';
         } catch (error) {
             manuscriptOutputElement.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
         }
+    });
+
+    // --- Manuscript Recording Logic ---
+    recordManuscriptButton.addEventListener('click', async () => {
+        manuscriptAudioChunks = [];
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            // --- Explicitly set the audio format for the recording ---
+            // We try 'audio/wav' first, as it's a standard format.
+            // If not supported, we fall back to a common default.
+            const options = { mimeType: 'audio/wav' };
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                console.warn(`${options.mimeType} is not supported. Falling back to default.`);
+                options.mimeType = 'audio/webm'; // A common, well-supported format
+            }
+            
+            manuscriptMediaRecorder = new MediaRecorder(stream, options);
+            
+            manuscriptMediaRecorder.ondataavailable = event => {
+                manuscriptAudioChunks.push(event.data);
+            };
+
+            manuscriptMediaRecorder.onstop = () => {
+                // Use the mimeType from the recorder for consistency
+                const audioBlob = new Blob(manuscriptAudioChunks, { type: manuscriptMediaRecorder.mimeType });
+                const topic = manuscriptTopicInput.value || 'manuscript';
+                // Adjust file extension based on what was actually recorded
+                const fileExtension = manuscriptMediaRecorder.mimeType.includes('wav') ? 'wav' : 'webm';
+                const fileName = `${topic.replace(/\s+/g, '_')}_reading.${fileExtension}`;
+                const audioFile = new File([audioBlob], fileName, { type: manuscriptMediaRecorder.mimeType });
+                
+                statusElement.textContent = `Uploading recording of "${topic}"...`;
+                uploadAndStartTranscription(audioFile);
+
+                // Stop the microphone stream to turn off the indicator
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            manuscriptMediaRecorder.start();
+            manuscriptRecordStatus.textContent = 'Recording...';
+            recordManuscriptButton.disabled = true;
+            stopManuscriptButton.disabled = false;
+
+        } catch (err) {
+            console.error('Error accessing microphone:', err);
+            manuscriptRecordStatus.textContent = 'Error: Could not access microphone.';
+        }
+    });
+
+    stopManuscriptButton.addEventListener('click', () => {
+        manuscriptMediaRecorder.stop();
+        manuscriptRecordStatus.textContent = 'Processing recording...';
+        recordManuscriptButton.disabled = false;
+        stopManuscriptButton.disabled = true;
     });
 
 

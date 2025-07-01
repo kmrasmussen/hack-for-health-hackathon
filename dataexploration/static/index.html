@@ -38,7 +38,15 @@
         <h2>Generate Manuscript</h2>
         <input type="text" id="manuscriptTopic" placeholder="Enter a topic (e.g., Sepsis)">
         <button id="generateManuscriptButton">Generate</button>
-        <div id="manuscriptOutput" style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9; display: none;"></div>
+        <div id="manuscriptOutput" style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9; display: none;">
+            <!-- Manuscript content will be rendered here by JS -->
+        </div>
+        <!-- Recording controls for the manuscript -->
+        <div id="manuscriptRecordControls" style="display: none; margin-top: 15px;">
+            <button id="recordManuscriptButton">Record Reading</button>
+            <button id="stopManuscriptButton" disabled>Stop & Transcribe</button>
+            <p id="manuscriptRecordStatus"></p>
+        </div>
     </div>
     <hr>
     

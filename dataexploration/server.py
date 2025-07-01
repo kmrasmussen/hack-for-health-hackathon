@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import contextlib
+from pydub import AudioSegment # <-- Import pydub
 
 # Import DB and transcription functions
 from database import get_db, init_db, Transcript, AsyncSessionLocal
@@ -40,16 +41,36 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # --- Background Transcription Task ---
 async def process_transcription_task(transcript_id: uuid.UUID, temp_file_path: str, db: AsyncSession):
     """The actual transcription logic that runs in the background."""
-    # --- Run Whisper Transcription ---
-    whisper_result = transcribe_with_whisper(temp_file_path)
+    
+    # --- Convert audio to a standard WAV format ---
+    converted_file_path = temp_file_path + ".wav"
+    try:
+        print(f"Converting {temp_file_path} to WAV format...")
+        audio = AudioSegment.from_file(temp_file_path)
+        audio.export(converted_file_path, format="wav")
+        print("Conversion successful.")
+    except Exception as e:
+        print(f"Error during audio conversion: {e}")
+        # Clean up and update DB with error status
+        os.remove(temp_file_path)
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(select(Transcript).where(Transcript.id == transcript_id))
+            db_transcript = result.scalar_one_or_none()
+            if db_transcript:
+                db_transcript.status = "failed_conversion"
+                await session.commit()
+        return
 
-    # --- Run Corti Transcription Workflow ---
+    # --- Run Whisper Transcription (on the converted file) ---
+    whisper_result = transcribe_with_whisper(converted_file_path)
+
+    # --- Run Corti Transcription Workflow (on the converted file) ---
     corti_result = "[Corti transcription failed]"
     token = get_access_token()
     if token:
         interaction_id = create_corti_interaction(token)
         if interaction_id:
-            recording_id = upload_recording(token, interaction_id, temp_file_path)
+            recording_id = upload_recording(token, interaction_id, converted_file_path)
             if recording_id:
                 corti_result = create_transcript(token, interaction_id, recording_id)
 
@@ -63,8 +84,10 @@ async def process_transcription_task(transcript_id: uuid.UUID, temp_file_path: s
             db_transcript.status = "completed"
             await session.commit()
 
-    # Clean up the temporary file
-    os.remove(temp_file_path)
+    # Clean up the temporary files - DISABLED FOR DEBUGGING
+    # os.remove(temp_file_path)
+    # os.remove(converted_file_path)
+    print(f"INFO: Kept temporary files for debugging: {temp_file_path} and {converted_file_path}")
 
 # --- API Endpoints ---
 @app.get("/")
