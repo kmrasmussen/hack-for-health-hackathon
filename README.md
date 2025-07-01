@@ -20,7 +20,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ### Install project
 ```bash
-uv install
+uv sync
 ```
 
 ### When you want to add new packages
