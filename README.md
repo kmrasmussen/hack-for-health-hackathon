@@ -44,3 +44,11 @@ uv run python script.py
 ## Plan
 - Coral dataset exploration
 - Speech analysis implementation
+
+
+# Running frontend1
+
+```
+cd dataexploration
+uvicorn server:app --reload
+```
