@@ -52,3 +52,6 @@ cd dataexploration
 uvicorn server:app --reload
 ```
 så burde den køre på localhost:8000
+
+eller
+uv run uvicorn server:app --reload
