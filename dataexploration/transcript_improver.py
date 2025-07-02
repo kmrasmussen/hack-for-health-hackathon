@@ -74,7 +74,7 @@ def improve_transcript_with_gpt(whisper_text: str, corti_text: str) -> ImprovedT
         # Corrected API call using the standard `chat.completions.create`
         # and `response_model` for structured output (requires `instructor` library)
         response = client.responses.parse(
-            model="o4-mini", # Corrected model name
+            model="gpt-4o-mini", # Corrected model name
             input=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
