@@ -1,0 +1,203 @@
+/* --- Global Styles & Variables --- */
+:root {
+    --primary-color: #007bff;
+    --primary-hover: #0056b3;
+    --secondary-color: #6c757d;
+    --background-color: #f4f7f9;
+    --card-background: #ffffff;
+    --text-color: #333;
+    --text-light: #555;
+    --border-color: #dee2e6;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --font-family: 'Poppins', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 2rem;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 2rem 0;
+}
+
+/* --- Layout & Card Styles --- */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+.quick-action-container {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background-color: var(--card-background);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Form Elements & Buttons --- */
+#fetchTopicButton {
+    background-color: var(--success-color);
+    font-size: 1.1rem;
+    padding: 0.8rem 1.8rem;
+}
+
+#fetchTopicButton:hover:not(:disabled) {
+    background-color: #218838; /* Darker success color */
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+}
+
+button {
+    font-family: var(--font-family);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+button:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
+
+button:disabled {
+    background-color: var(--secondary-color);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+input[type="text"], input[type="file"] {
+    font-family: var(--font-family);
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+}
+
+input[type="file"] {
+    padding: 0.5rem;
+}
+
+/* --- Manuscript Section --- */
+#manuscriptOutput {
+    background-color: #fdfdff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+#manuscriptOutput h4 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+#manuscriptOutput p {
+    line-height: 1.6;
+    color: var(--text-light);
+}
+
+#playPresentationButton, #patientLeavesButton {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+#patientLeavesContainer {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+/* --- Job List & Results --- */
+#jobList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.job-item {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.job-item:hover {
+    background-color: #e9ecef;
+}
+
+.job-item.selected {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-hover);
+}
+
+/* --- Improved Transcript Styles --- */
+#improvedResults ul { list-style-type: none; padding-left: 0; }
+#improvedResults li { margin-bottom: 1rem; }
+.uncertain-word { background-color: #fff3cd; border-radius: 3px; padding: 0 2px; }
+.medical-icon { margin-right: 8px; color: var(--primary-color); }
+[contenteditable="true"]:focus { outline: 2px solid var(--primary-color); background-color: #f0f8ff; }
+
+.sentence-container { display: flex; flex-direction: column; gap: 0.5rem; }
+.labels-container { display: flex; gap: 10px; font-size: 0.8em; }
+.label { padding: 3px 8px; border-radius: 12px; font-weight: 600; }
+.label.corti { background-color: #d1e7dd; color: #0f5132; }
+.label.whisper { background-color: #f8d7da; color: #842029; }
+
+/* --- Utility --- */
+.loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 1rem auto;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

@@ -75,8 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <ul>
                     ${data.key_takeaways.map(item => `<li>${item}</li>`).join('')}
                 </ul>
+                <div id="patientLeavesContainer"></div>
             `;
-            // Show the recording controls
+            // Show the manuscript output and recording controls
+            manuscriptOutputElement.style.display = 'block';
             manuscriptRecordControls.style.display = 'block';
             recordManuscriptButton.disabled = false;
             stopManuscriptButton.disabled = true;
@@ -114,12 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // When the first audio finishes, show the "Patient Leaves" button
                 audio.onended = () => {
-                    button.remove(); // Remove the "Start Conversation" button
+                    button.style.display = 'none'; // Hide the "Start Conversation" button
+                    const container = document.getElementById('patientLeavesContainer');
                     const patientLeavesButton = document.createElement('button');
                     patientLeavesButton.id = 'patientLeavesButton';
                     patientLeavesButton.textContent = 'Patient Leaves';
-                    // Insert it where the original button was, inside the H4
-                    manuscriptOutputElement.querySelector('h4').appendChild(patientLeavesButton);
+                    container.appendChild(patientLeavesButton);
                 };
 
             } catch (error) {
