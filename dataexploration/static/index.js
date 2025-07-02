@@ -316,17 +316,25 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3>Corti Transcription:</h3>
             <p>${data.corti_transcript || 'N/A'}</p>
         `;
-        improveSection.style.display = 'block';
+        improveSection.style.display = 'block'; // Show the whole "Improve" card
 
         if (data.improved_transcript) {
+            // If data already exists, render it and hide the "Improve" button
+            console.log("Found existing improved transcript. Rendering it now.");
             renderImprovedTranscript(data.improved_transcript);
+            improveButton.style.display = 'none'; // Hide the button
         } else {
+            // If no data, show the "Improve" button and clear the results
+            console.log("No improved transcript found. Showing 'Improve' button.");
             improvedResultsElement.innerHTML = '';
             saveButtonContainer.style.display = 'none';
+            improveButton.style.display = 'block'; // Make sure the button is visible
         }
     }
 
     async function handleImprove() {
+        // When the user clicks "Improve", hide the button to prevent re-clicks
+        improveButton.style.display = 'none';
         improvedResultsElement.innerHTML = '<div class="loader"></div><p>Asking the AI to improve the transcript...</p>';
         
         const detailsResponse = await fetch(`/transcripts/${currentTranscriptId}`);
