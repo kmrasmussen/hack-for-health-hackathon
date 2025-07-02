@@ -179,7 +179,23 @@ input[type="file"] {
 /* --- Improved Transcript Styles --- */
 #improvedResults ul { list-style-type: none; padding-left: 0; }
 #improvedResults li { margin-bottom: 1rem; }
-.uncertain-word { background-color: #fff3cd; border-radius: 3px; padding: 0 2px; }
+
+/* --- Add these styles back for highlighting --- */
+.uncertain-sentence .sentence-text {
+    color: #856404; /* A dark yellow/brown for readability */
+    background-color: #fff3cd; /* Light yellow background for the whole sentence */
+    padding: 5px;
+    border-radius: 5px;
+    border-left: 4px solid #ffc107; /* A prominent left border */
+}
+.uncertain-word { 
+    background-color: var(--warning-color); /* Use the theme's warning color */
+    color: #333;
+    border-radius: 3px; 
+    padding: 1px 3px; 
+    font-weight: 600;
+}
+
 .medical-icon { margin-right: 8px; color: var(--primary-color); }
 [contenteditable="true"]:focus { outline: 2px solid var(--primary-color); background-color: #f0f8ff; }
 

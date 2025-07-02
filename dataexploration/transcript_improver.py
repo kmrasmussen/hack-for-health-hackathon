@@ -54,6 +54,8 @@ def improve_transcript_with_gpt(whisper_text: str, corti_text: str) -> ImprovedT
     3.  `has_medical_terminology`: If the sentence contains specialist medical terms (e.g., names of conditions, drugs, anatomy), set this to `true`. Otherwise, set it to `false`.
     4.  `specific_uncertain_word`: If `is_uncertain` is true, list the specific words you are most unsure about in this array. The words must be an exact match from the final text. If the sentence is not uncertain, this should be an empty list.
     5.  The final output must be structured as a list of sentences according to the provided schema.
+    
+    Please make sure that at least one of the sentences contains some uncertain words, just look at whether there is a mismatch between the two transcripts.
     """
 
     user_prompt = f"""
@@ -82,6 +84,7 @@ def improve_transcript_with_gpt(whisper_text: str, corti_text: str) -> ImprovedT
             text_format=ImprovedTranscript # This enforces the Pydantic schema
         )
         print("Successfully generated improved transcript.")
+        print(response.output_parsed)
         return response.output_parsed
     except Exception as e:
         print(f"An error occurred while improving the transcript: {e}")
